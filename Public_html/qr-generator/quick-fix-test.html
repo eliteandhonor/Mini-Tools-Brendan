@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Generator - Quick Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        canvas { border: 2px solid #333; margin: 10px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>QR Generator - Quick Fix Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Library Loading Test</h3>
+        <div id="library-test"></div>
+        <button onclick="testLibraries()">Test Libraries</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Simple QR Generation Test</h3>
+        <input type="text" id="qr-text" value="Hello World" placeholder="Enter text for QR code">
+        <button onclick="generateSimpleQR()">Generate QR</button>
+        <div id="simple-qr"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Canvas QR Generation Test (Like Main App)</h3>
+        <canvas id="test-canvas" width="256" height="256"></canvas>
+        <button onclick="generateCanvasQR()">Generate to Canvas</button>
+        <div id="canvas-test-output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. White Box Reproduction Test</h3>
+        <div id="white-box-test">
+            <canvas id="wb-canvas-1" width="128" height="128"></canvas>
+            <canvas id="wb-canvas-2" width="128" height="128"></canvas>
+            <canvas id="wb-canvas-3" width="128" height="128"></canvas>
+        </div>
+        <button onclick="reproduceWhiteBoxes()">Reproduce White Boxes</button>
+        <div id="white-box-output"></div>
+    </div>
+
+    <!-- Load QR libraries same as main app -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Primary fallback CDN if first one fails
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <script>
+        // Secondary fallback using different CDN
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://unpkg.com/qrcode-js@latest/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <script src="simple-qr.js"></script>
+    
+    <script>
+        function testLibraries() {
+            const output = document.getElementById('library-test');
+            const results = [];
+            
+            results.push(`QRCode defined: ${typeof QRCode !== 'undefined'}`);
+            results.push(`QRCode.CorrectLevel: ${typeof QRCode !== 'undefined' && !!QRCode.CorrectLevel}`);
+            results.push(`SimpleQRCode defined: ${typeof SimpleQRCode !== 'undefined'}`);
+            
+            if (typeof QRCode !== 'undefined' && QRCode.CorrectLevel) {
+                results.push(`<span class="success">✅ Main QR library is working</span>`);
+            } else {
+                results.push(`<span class="error">❌ Main QR library not working</span>`);
+            }
+            
+            output.innerHTML = results.join('<br>');
+        }
+        
+        function generateSimpleQR() {
+            const text = document.getElementById('qr-text').value || 'Hello World';
+            const container = document.getElementById('simple-qr');
+            container.innerHTML = '';
+            
+            try {
+                new QRCode(container, {
+                    text: text,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                console.log('Simple QR generated');
+            } catch (error) {
+                container.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function generateCanvasQR() {
+            const canvas = document.getElementById('test-canvas');
+            const output = document.getElementById('canvas-test-output');
+            const text = document.getElementById('qr-text').value || 'Canvas Test';
+            
+            output.innerHTML = 'Generating...';
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Create temp div for QR generation
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                tempDiv.style.top = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const qr = new QRCode(tempDiv, {
+                    text: text,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Wait for generation
+                let attempts = 0;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    
+                    const qrCanvas = tempDiv.querySelector('canvas');
+                    const qrImg = tempDiv.querySelector('img');
+                    
+                    if (qrCanvas) {
+                        ctx.drawImage(qrCanvas, 0, 0, 256, 256);
+                        output.innerHTML = `<span class="success">✅ Canvas QR generated (attempt ${attempts})</span>`;
+                        clearInterval(checkInterval);
+                        document.body.removeChild(tempDiv);
+                    } else if (qrImg && qrImg.complete) {
+                        ctx.drawImage(qrImg, 0, 0, 256, 256);
+                        output.innerHTML = `<span class="success">✅ Image QR generated (attempt ${attempts})</span>`;
+                        clearInterval(checkInterval);
+                        document.body.removeChild(tempDiv);
+                    } else if (attempts > 20) {
+                        output.innerHTML = `<span class="error">❌ QR generation timeout after ${attempts} attempts</span>`;
+                        clearInterval(checkInterval);
+                        document.body.removeChild(tempDiv);
+                    }
+                }, 100);
+                
+            } catch (error) {
+                output.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        function reproduceWhiteBoxes() {
+            const output = document.getElementById('white-box-output');
+            output.innerHTML = 'Testing white box reproduction...';
+            
+            const canvases = ['wb-canvas-1', 'wb-canvas-2', 'wb-canvas-3'];
+            const texts = ['Box 1', 'Box 2', 'Box 3'];
+            
+            // Clear all canvases first
+            canvases.forEach(canvasId => {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            });
+            
+            // Generate QRs rapidly (this might cause the white box issue)
+            canvases.forEach((canvasId, index) => {
+                setTimeout(() => {
+                    try {
+                        const canvas = document.getElementById(canvasId);
+                        const ctx = canvas.getContext('2d');
+                        
+                        const tempDiv = document.createElement('div');
+                        tempDiv.style.position = 'absolute';
+                        tempDiv.style.left = '-9999px';
+                        document.body.appendChild(tempDiv);
+                        
+                        new QRCode(tempDiv, {
+                            text: texts[index],
+                            width: 128,
+                            height: 128,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                        
+                        // Quick check (this might be the issue)
+                        setTimeout(() => {
+                            const qrElement = tempDiv.querySelector('canvas') || tempDiv.querySelector('img');
+                            if (qrElement) {
+                                ctx.drawImage(qrElement, 0, 0, 128, 128);
+                                output.innerHTML += `<br>✅ Generated QR ${index + 1}`;
+                            } else {
+                                output.innerHTML += `<br>❌ Failed QR ${index + 1} - WHITE BOX LIKELY`;
+                            }
+                            document.body.removeChild(tempDiv);
+                        }, 200); // Short timeout might cause white boxes
+                        
+                    } catch (error) {
+                        output.innerHTML += `<br>Error on ${index + 1}: ${error.message}`;
+                    }
+                }, index * 50); // Rapid succession
+            });
+        }
+        
+        // Test libraries on load
+        window.onload = function() {
+            setTimeout(testLibraries, 1000);
+        };
+    </script>
+</body>
+</html>

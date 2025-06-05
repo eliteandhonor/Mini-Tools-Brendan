@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        #test-results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>QR Generator Module Test</h1>
+    <button onclick="runTests()">Run QR Generation Tests</button>
+    
+    <div id="test-results"></div>
+    
+    <div id="qr-output">
+        <h3>Generated QR Codes:</h3>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script type="module">
+        import { QRLibraryManager } from './modules/QRLibraryManager.js';
+        import { DataValidator } from './modules/DataValidator.js';
+        
+        let qrManager, dataValidator;
+        let testResults = [];
+        
+        // Initialize modules
+        try {
+            qrManager = new QRLibraryManager();
+            dataValidator = new DataValidator();
+            addResult('✅ Modules imported successfully', 'success');
+        } catch (error) {
+            addResult('❌ Module import failed: ' + error.message, 'error');
+        }
+        
+        function addResult(message, type) {
+            testResults.push({message, type});
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testQRGeneration(text, description) {
+            try {
+                addResult(`🧪 Testing: ${description}`, 'warning');
+                
+                // Create a test canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                document.getElementById('qr-output').appendChild(canvas);
+                
+                // Generate QR code
+                const success = await qrManager.generateQR(canvas, text, {
+                    width: 256,
+                    margin: 2,
+                    color: { dark: '#000000', light: '#ffffff' }
+                });
+                
+                if (success) {
+                    addResult(`✅ ${description} - Generated successfully`, 'success');
+                    return true;
+                } else {
+                    addResult(`❌ ${description} - Generation failed`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ ${description} - Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        window.runTests = async function() {
+            // Clear previous results
+            testResults = [];
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('qr-output').innerHTML = '<h3>Generated QR Codes:</h3>';
+            
+            addResult('🚀 Starting QR Generation Tests...', 'warning');
+            
+            // Test library validation
+            const isValid = qrManager.validateLibraries();
+            if (isValid) {
+                addResult('✅ QR Libraries validated', 'success');
+            } else {
+                addResult('❌ QR Libraries validation failed', 'error');
+                return;
+            }
+            
+            // Test basic text QR
+            await testQRGeneration('Hello World!', 'Basic text QR');
+            
+            // Test URL QR
+            await testQRGeneration('https://www.example.com', 'URL QR');
+            
+            // Test email QR
+            await testQRGeneration('mailto:test@example.com', 'Email QR');
+            
+            // Test phone QR
+            await testQRGeneration('tel:+1234567890', 'Phone QR');
+            
+            // Test SMS QR
+            await testQRGeneration('sms:+1234567890?body=Hello', 'SMS QR');
+            
+            // Test WiFi QR
+            await testQRGeneration('WIFI:T:WPA;S:TestNetwork;P:password123;;', 'WiFi QR');
+            
+            // Test vCard QR
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+ORG:Test Company
+TEL:+1234567890
+EMAIL:john@example.com
+END:VCARD`;
+            await testQRGeneration(vcard, 'vCard QR');
+            
+            addResult('🏁 All tests completed!', 'success');
+        }
+    </script>
+</body>
+</html>

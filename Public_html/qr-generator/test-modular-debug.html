@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modular QR Generator - Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Modular QR Generator Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Library Loading Test</h2>
+        <div id="library-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Module Import Test</h2>
+        <div id="module-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. QR Generation Test</h2>
+        <div id="qr-status"></div>
+        <canvas id="test-canvas" width="256" height="256"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Console Log</h2>
+        <pre id="console-log"></pre>
+    </div>
+
+    <!-- QR Code Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Fallback loading
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <script src="simple-qr.js"></script>
+
+    <script type="module">
+        // Console capture for debugging
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        let logMessages = [];
+
+        function captureLog(type, ...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logMessages.push(`[${type.toUpperCase()}] ${new Date().toLocaleTimeString()}: ${message}`);
+            updateConsoleLog();
+        }
+
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            captureLog('log', ...args);
+        };
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            captureLog('error', ...args);
+        };
+        console.warn = (...args) => {
+            originalWarn.apply(console, args);
+            captureLog('warn', ...args);
+        };
+
+        function updateConsoleLog() {
+            document.getElementById('console-log').textContent = logMessages.slice(-20).join('\n');
+        }
+
+        function setStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Test 1: Library Loading
+        function testLibraries() {
+            console.log('=== Testing Library Loading ===');
+            
+            const hasMainLibrary = typeof QRCode !== 'undefined' && QRCode.CorrectLevel;
+            const hasFallback = typeof SimpleQRCode !== 'undefined';
+            
+            console.log('QRCode available:', typeof QRCode !== 'undefined');
+            console.log('QRCode.CorrectLevel available:', hasMainLibrary);
+            console.log('SimpleQRCode available:', hasFallback);
+            
+            if (hasMainLibrary || hasFallback) {
+                setStatus('library-status', 'success', 
+                    `✅ Libraries loaded successfully<br>
+                    Main: ${hasMainLibrary ? 'Available' : 'Not available'}<br>
+                    Fallback: ${hasFallback ? 'Available' : 'Not available'}`
+                );
+                return true;
+            } else {
+                setStatus('library-status', 'error', '❌ No QR libraries available');
+                return false;
+            }
+        }
+
+        // Test 2: Module Imports
+        async function testModules() {
+            console.log('=== Testing Module Imports ===');
+            
+            try {
+                const { QRLibraryManager } = await import('./modules/QRLibraryManager.js');
+                const { DataValidator } = await import('./modules/DataValidator.js');
+                const { NotificationManager } = await import('./modules/NotificationManager.js');
+                const { UIManager } = await import('./modules/UIManager.js');
+                
+                console.log('✅ All modules imported successfully');
+                
+                // Test module instantiation
+                const notificationManager = new NotificationManager();
+                const dataValidator = new DataValidator();
+                const qrLibraryManager = new QRLibraryManager();
+                
+                console.log('✅ All modules instantiated successfully');
+                
+                setStatus('module-status', 'success', '✅ All modules loaded and instantiated successfully');
+                return { QRLibraryManager, DataValidator, NotificationManager, UIManager };
+                
+            } catch (error) {
+                console.error('❌ Module import/instantiation failed:', error);
+                setStatus('module-status', 'error', `❌ Module loading failed: ${error.message}`);
+                return null;
+            }
+        }
+
+        // Test 3: QR Generation
+        async function testQRGeneration(modules) {
+            console.log('=== Testing QR Generation ===');
+            
+            if (!modules) {
+                setStatus('qr-status', 'error', '❌ Cannot test QR generation - modules not loaded');
+                return;
+            }
+
+            try {
+                const { QRLibraryManager } = modules;
+                const qrManager = new QRLibraryManager();
+                
+                // Validate libraries
+                const isValid = qrManager.validateLibraries();
+                if (!isValid) {
+                    setStatus('qr-status', 'error', '❌ QR libraries validation failed');
+                    return;
+                }
+                
+                // Test QR generation
+                const canvas = document.getElementById('test-canvas');
+                const testText = 'Hello, Modular World! This is a test QR code.';
+                const options = {
+                    width: 256,
+                    height: 256,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    },
+                    errorCorrectionLevel: 'M'
+                };
+                
+                console.log('Generating QR code with text:', testText);
+                
+                await qrManager.generateQRCode(canvas, testText, options);
+                
+                console.log('✅ QR code generated successfully');
+                setStatus('qr-status', 'success', '✅ QR code generated successfully!');
+                
+            } catch (error) {
+                console.error('❌ QR generation failed:', error);
+                setStatus('qr-status', 'error', `❌ QR generation failed: ${error.message}`);
+            }
+        }
+
+        // Run all tests
+        async function runTests() {
+            console.log('🚀 Starting modular QR generator tests...');
+            
+            // Test libraries
+            const librariesOk = testLibraries();
+            
+            // Test modules
+            const modules = await testModules();
+            
+            // Test QR generation if previous tests passed
+            if (librariesOk && modules) {
+                await testQRGeneration(modules);
+            }
+            
+            console.log('🏁 All tests completed');
+        }
+
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runTests);
+        } else {
+            runTests();
+        }
+    </script>
+</body>
+</html>

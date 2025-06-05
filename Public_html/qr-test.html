@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Test</title>
+</head>
+<body>
+    <h1>QR Code Library Test</h1>
+    <canvas id="qr-canvas"></canvas>
+    <div id="status"></div>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusDiv = document.getElementById('status');
+            const canvas = document.getElementById('qr-canvas');
+            
+            if (typeof QRCode === 'undefined' || !QRCode.CorrectLevel) {
+                statusDiv.innerHTML = '<p style="color: red;">❌ QRCodeJS library failed to load</p>';
+            } else {
+                statusDiv.innerHTML = '<p style="color: green;">✅ QRCodeJS library loaded successfully</p>';
+                
+                // Test QR generation using qrcodejs
+                try {
+                    const tempDiv = document.createElement('div');
+                    const qr = new QRCode(tempDiv, {
+                        text: 'Hello World!',
+                        width: 200,
+                        height: 200,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    
+                    setTimeout(() => {
+                        const generatedCanvas = tempDiv.querySelector('canvas');
+                        if (generatedCanvas) {
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = 200;
+                            canvas.height = 200;
+                            ctx.drawImage(generatedCanvas, 0, 0, 200, 200);
+                            statusDiv.innerHTML += '<p style="color: green;">✅ QR code generated successfully</p>';
+                        } else {
+                            statusDiv.innerHTML += '<p style="color: red;">❌ QR generation failed: No canvas created</p>';
+                        }
+                    }, 200);
+                } catch (error) {
+                    statusDiv.innerHTML += `<p style="color: red;">❌ QR generation failed: ${error.message}</p>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

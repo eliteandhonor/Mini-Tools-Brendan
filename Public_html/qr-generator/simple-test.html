@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple QR Test</title>
+</head>
+<body>
+    <h1>Simple QR Test</h1>
+    <div id="qrcode"></div>
+    <canvas id="qr-canvas" width="256" height="256" style="border: 2px solid red;"></canvas>
+    <button onclick="generateTest()">Generate Test QR</button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        function generateTest() {
+            console.log('QRCode available:', typeof QRCode !== 'undefined');
+            
+            if (typeof QRCode !== 'undefined') {
+                // Method 1: Direct generation to div
+                const div = document.getElementById('qrcode');
+                div.innerHTML = '';
+                
+                const qr = new QRCode(div, {
+                    text: "Hello World",
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Method 2: Copy to canvas
+                setTimeout(() => {
+                    const canvas = document.getElementById('qr-canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const generatedCanvas = div.querySelector('canvas');
+                    const generatedImg = div.querySelector('img');
+                    
+                    console.log('Found canvas:', !!generatedCanvas);
+                    console.log('Found img:', !!generatedImg);
+                    
+                    if (generatedCanvas) {
+                        console.log('Copying from canvas...');
+                        ctx.drawImage(generatedCanvas, 0, 0, 256, 256);
+                    } else if (generatedImg && generatedImg.complete) {
+                        console.log('Copying from image...');
+                        ctx.drawImage(generatedImg, 0, 0, 256, 256);
+                    } else if (generatedImg) {
+                        console.log('Waiting for image to load...');
+                        generatedImg.onload = () => {
+                            ctx.drawImage(generatedImg, 0, 0, 256, 256);
+                        };
+                    }
+                }, 1000);
+            } else {
+                console.error('QRCode library not loaded');
+            }
+        }
+    </script>
+</body>
+</html>

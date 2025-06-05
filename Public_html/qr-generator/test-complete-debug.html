@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete QR Generator Test</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+        .log-container {
+            grid-column: 1 / -1;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Complete QR Generator Test Suite</h1>
+        
+        <div class="test-grid">
+            <!-- Library Status -->
+            <div class="test-card">
+                <h3>📚 Library Status</h3>
+                <div id="library-status"></div>
+            </div>
+            
+            <!-- Module Status -->
+            <div class="test-card">
+                <h3>🧩 Module Status</h3>
+                <div id="module-status"></div>
+            </div>
+            
+            <!-- QR Generation Test -->
+            <div class="test-card">
+                <h3>🎯 QR Generation Test</h3>
+                <div>
+                    <label>Text to encode:</label>
+                    <input type="text" id="test-text" value="Hello, Modular World! 🌟">
+                    <button onclick="testQRGeneration()">Generate QR Code</button>
+                </div>
+                <div id="qr-generation-status"></div>
+                <canvas id="test-qr-canvas" width="256" height="256"></canvas>
+            </div>
+            
+            <!-- Manual QR Test -->
+            <div class="test-card">
+                <h3>🔧 Manual QR Test</h3>
+                <div>
+                    <button onclick="testDirectQR()">Test Direct QR Generation</button>
+                    <button onclick="testWithFallback()">Test Fallback Library</button>
+                </div>
+                <div id="manual-test-status"></div>
+                <canvas id="manual-qr-canvas" width="256" height="256"></canvas>
+            </div>
+            
+            <!-- Application Test -->
+            <div class="test-card">
+                <h3>🚀 Full Application Test</h3>
+                <div>
+                    <button onclick="testFullApp()">Initialize Full Application</button>
+                    <button onclick="resetApp()">Reset Application</button>
+                </div>
+                <div id="app-test-status"></div>
+            </div>
+            
+            <!-- White Box Issue Test -->
+            <div class="test-card">
+                <h3>🔍 White Box Issue Test</h3>
+                <div>
+                    <button onclick="testWhiteBoxIssue()">Test Multiple Generations</button>
+                    <button onclick="clearWhiteBoxTest()">Clear Test</button>
+                </div>
+                <div id="white-box-status"></div>
+                <div id="white-box-canvases"></div>
+            </div>
+            
+            <!-- Console Log -->
+            <div class="test-card log-container">
+                <h3>📋 Console Log</h3>
+                <pre id="console-log"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <script src="simple-qr.js"></script>
+
+    <script>
+        // Console logging
+        let logMessages = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function captureLog(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logMessages.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            updateConsoleLog();
+            
+            // Call original function
+            if (type === 'log') originalLog.apply(console, args);
+            else if (type === 'error') originalError.apply(console, args);
+            else if (type === 'warn') originalWarn.apply(console, args);
+        }
+
+        console.log = (...args) => captureLog('log', ...args);
+        console.error = (...args) => captureLog('error', ...args);
+        console.warn = (...args) => captureLog('warn', ...args);
+
+        function updateConsoleLog() {
+            document.getElementById('console-log').textContent = logMessages.slice(-30).join('\n');
+        }
+
+        function setStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        // Test library availability
+        function testLibraries() {
+            console.log('=== Testing QR Libraries ===');
+            
+            const hasMainLibrary = typeof QRCode !== 'undefined' && QRCode.CorrectLevel;
+            const hasFallback = typeof SimpleQRCode !== 'undefined';
+            
+            let status = '';
+            if (hasMainLibrary) {
+                status += '✅ Main QRCodeJS library available<br>';
+            } else {
+                status += '❌ Main QRCodeJS library not available<br>';
+            }
+            
+            if (hasFallback) {
+                status += '✅ Fallback SimpleQRCode library available<br>';
+            } else {
+                status += '❌ Fallback SimpleQRCode library not available<br>';
+            }
+            
+            const overall = hasMainLibrary || hasFallback;
+            setStatus('library-status', overall ? 'success' : 'error', status);
+            
+            return { hasMainLibrary, hasFallback, overall };
+        }
+
+        // Test direct QR generation (without modules)
+        async function testDirectQR() {
+            console.log('=== Testing Direct QR Generation ===');
+            
+            try {
+                const canvas = document.getElementById('manual-qr-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Create temporary div for QR generation
+                const tempDiv = document.createElement('div');
+                tempDiv.style.cssText = 'position: absolute; left: -9999px; top: -9999px;';
+                document.body.appendChild(tempDiv);
+                
+                // Generate QR code
+                const qr = new QRCode(tempDiv, {
+                    text: 'Direct QR Test - Hello World!',
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Wait for generation and copy to canvas
+                setTimeout(() => {
+                    const qrCanvas = tempDiv.querySelector('canvas');
+                    if (qrCanvas) {
+                        ctx.drawImage(qrCanvas, 0, 0);
+                        setStatus('manual-test-status', 'success', '✅ Direct QR generation successful');
+                        console.log('✅ Direct QR generation completed');
+                    } else {
+                        setStatus('manual-test-status', 'error', '❌ No canvas found in QR generation');
+                        console.error('❌ No canvas found in QR generation');
+                    }
+                    document.body.removeChild(tempDiv);
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Direct QR generation failed:', error);
+                setStatus('manual-test-status', 'error', `❌ Direct QR generation failed: ${error.message}`);
+            }
+        }
+
+        // Test with fallback library
+        async function testWithFallback() {
+            console.log('=== Testing Fallback Library ===');
+            
+            if (typeof SimpleQRCode === 'undefined') {
+                setStatus('manual-test-status', 'error', '❌ SimpleQRCode fallback not available');
+                return;
+            }
+            
+            try {
+                const canvas = document.getElementById('manual-qr-canvas');
+                
+                await SimpleQRCode.toCanvas(canvas, 'Fallback QR Test - Hello World!', {
+                    width: 256,
+                    height: 256,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                });
+                
+                setStatus('manual-test-status', 'success', '✅ Fallback QR generation successful');
+                console.log('✅ Fallback QR generation completed');
+                
+            } catch (error) {
+                console.error('❌ Fallback QR generation failed:', error);
+                setStatus('manual-test-status', 'error', `❌ Fallback QR generation failed: ${error.message}`);
+            }
+        }
+
+        // Test modular QR generation
+        async function testQRGeneration() {
+            console.log('=== Testing Modular QR Generation ===');
+            
+            try {
+                // Import QRLibraryManager
+                const { QRLibraryManager } = await import('./modules/QRLibraryManager.js');
+                
+                const qrManager = new QRLibraryManager();
+                const canvas = document.getElementById('test-qr-canvas');
+                const text = document.getElementById('test-text').value;
+                
+                const options = {
+                    width: 256,
+                    height: 256,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    },
+                    errorCorrectionLevel: 'M'
+                };
+                
+                await qrManager.generateQRCode(canvas, text, options);
+                
+                setStatus('qr-generation-status', 'success', '✅ Modular QR generation successful');
+                console.log('✅ Modular QR generation completed');
+                
+            } catch (error) {
+                console.error('❌ Modular QR generation failed:', error);
+                setStatus('qr-generation-status', 'error', `❌ Modular QR generation failed: ${error.message}`);
+            }
+        }
+
+        // Test white box issue
+        async function testWhiteBoxIssue() {
+            console.log('=== Testing White Box Issue ===');
+            
+            const container = document.getElementById('white-box-canvases');
+            container.innerHTML = '<h4>Multiple QR Generation Test:</h4>';
+            
+            try {
+                const { QRLibraryManager } = await import('./modules/QRLibraryManager.js');
+                const qrManager = new QRLibraryManager();
+                
+                const tests = [
+                    'Test 1: First QR Code',
+                    'Test 2: Second QR Code',
+                    'Test 3: Third QR Code',
+                    'Test 4: Fourth QR Code',
+                    'Test 5: Fifth QR Code'
+                ];
+                
+                let successCount = 0;
+                
+                for (let i = 0; i < tests.length; i++) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 150;
+                    canvas.height = 150;
+                    canvas.style.margin = '5px';
+                    canvas.style.border = '1px solid #ccc';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = tests[i];
+                    label.style.fontSize = '12px';
+                    label.style.textAlign = 'center';
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.style.display = 'inline-block';
+                    wrapper.style.margin = '10px';
+                    wrapper.appendChild(label);
+                    wrapper.appendChild(canvas);
+                    container.appendChild(wrapper);
+                    
+                    try {
+                        await qrManager.generateQRCode(canvas, tests[i], {
+                            width: 150,
+                            height: 150,
+                            color: { dark: '#000000', light: '#ffffff' },
+                            errorCorrectionLevel: 'M'
+                        });
+                        
+                        successCount++;
+                        console.log(`✅ Generated QR ${i + 1}/${tests.length}`);
+                        
+                        // Add a small delay between generations
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (error) {
+                        console.error(`❌ Failed to generate QR ${i + 1}:`, error);
+                        canvas.style.background = '#f8d7da';
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#721c24';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Error', canvas.width/2, canvas.height/2);
+                    }
+                }
+                
+                const result = `Generated ${successCount}/${tests.length} QR codes successfully`;
+                setStatus('white-box-status', successCount === tests.length ? 'success' : 'warning', result);
+                console.log(result);
+                
+            } catch (error) {
+                console.error('❌ White box test failed:', error);
+                setStatus('white-box-status', 'error', `❌ White box test failed: ${error.message}`);
+            }
+        }
+
+        function clearWhiteBoxTest() {
+            document.getElementById('white-box-canvases').innerHTML = '';
+            setStatus('white-box-status', 'warning', 'Test cleared');
+        }
+
+        // Test full application
+        async function testFullApp() {
+            console.log('=== Testing Full Application ===');
+            
+            try {
+                // Import main application
+                const { QRGeneratorApp } = await import('./script-modular.js');
+                
+                // Initialize app
+                window.testApp = new QRGeneratorApp();
+                
+                setStatus('app-test-status', 'success', '✅ Full application initialized successfully');
+                console.log('✅ Full application test completed');
+                
+            } catch (error) {
+                console.error('❌ Full application test failed:', error);
+                setStatus('app-test-status', 'error', `❌ Full application test failed: ${error.message}`);
+            }
+        }
+
+        function resetApp() {
+            if (window.testApp) {
+                delete window.testApp;
+                setStatus('app-test-status', 'warning', 'Application reset');
+                console.log('Application reset');
+            }
+        }
+
+        // Test modules individually
+        async function testModules() {
+            console.log('=== Testing Individual Modules ===');
+            
+            const modules = [
+                'QRLibraryManager',
+                'DataValidator', 
+                'NotificationManager',
+                'UIManager',
+                'EventManager',
+                'ImageManager',
+                'ActionManager',
+                'ThemeManager'
+            ];
+            
+            let results = [];
+            
+            for (const moduleName of modules) {
+                try {
+                    const module = await import(`./modules/${moduleName}.js`);
+                    const ModuleClass = module[moduleName];
+                    
+                    if (ModuleClass) {
+                        // Try to instantiate (with minimal args)
+                        let instance;
+                        if (moduleName === 'UIManager' || moduleName === 'ImageManager' || moduleName === 'ActionManager') {
+                            instance = new ModuleClass({});
+                        } else if (moduleName === 'EventManager') {
+                            instance = new ModuleClass({});
+                        } else {
+                            instance = new ModuleClass();
+                        }
+                        
+                        results.push(`✅ ${moduleName}: OK`);
+                        console.log(`✅ ${moduleName} loaded and instantiated successfully`);
+                    } else {
+                        results.push(`❌ ${moduleName}: Class not found`);
+                        console.error(`❌ ${moduleName}: Class not found in module`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${moduleName}: ${error.message}`);
+                    console.error(`❌ ${moduleName} failed:`, error);
+                }
+            }
+            
+            const successCount = results.filter(r => r.includes('✅')).length;
+            const status = successCount === modules.length ? 'success' : 'warning';
+            setStatus('module-status', status, results.join('<br>'));
+        }
+
+        // Initialize tests
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Starting comprehensive QR Generator tests...');
+            
+            // Run basic tests
+            testLibraries();
+            testModules();
+        });
+
+        // Expose test functions globally
+        window.testQRGeneration = testQRGeneration;
+        window.testDirectQR = testDirectQR;
+        window.testWithFallback = testWithFallback;
+        window.testFullApp = testFullApp;
+        window.resetApp = resetApp;
+        window.testWhiteBoxIssue = testWhiteBoxIssue;
+        window.clearWhiteBoxTest = clearWhiteBoxTest;
+    </script>
+</body>
+</html>

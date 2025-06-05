@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug White Boxes Issue</title>
+    <style>
+        canvas {
+            border: 2px solid red;
+            margin: 10px;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug White Boxes Issue</h1>
+    
+    <div class="debug-info">
+        <h3>Library Status:</h3>
+        <div id="library-status"></div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Test 1: Direct QR Generation</h3>
+        <div id="qr-test-1"></div>
+        <button onclick="test1()">Run Test 1</button>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Test 2: Canvas Generation (like main app)</h3>
+        <canvas id="test-canvas" width="256" height="256"></canvas>
+        <button onclick="test2()">Run Test 2</button>
+        <div id="test2-output"></div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Test 3: Multiple Canvas Test</h3>
+        <canvas id="canvas-1" width="128" height="128"></canvas>
+        <canvas id="canvas-2" width="128" height="128"></canvas>
+        <canvas id="canvas-3" width="128" height="128"></canvas>
+        <button onclick="test3()">Run Test 3 (Multiple)</button>
+        <div id="test3-output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Check library status
+        function checkLibraries() {
+            const status = document.getElementById('library-status');
+            status.innerHTML = `
+                <p>QRCode available: ${typeof QRCode !== 'undefined'}</p>
+                <p>QRCode.CorrectLevel available: ${typeof QRCode !== 'undefined' && !!QRCode.CorrectLevel}</p>
+                <p>Window.QRCode: ${!!window.QRCode}</p>
+            `;
+        }
+
+        // Test 1: Direct generation
+        function test1() {
+            const container = document.getElementById('qr-test-1');
+            container.innerHTML = '';
+            
+            try {
+                const qr = new QRCode(container, {
+                    text: "TEST QR 1",
+                    width: 128,
+                    height: 128,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                setTimeout(() => {
+                    const canvas = container.querySelector('canvas');
+                    const img = container.querySelector('img');
+                    console.log('Test 1 - Canvas:', canvas, 'Image:', img);
+                }, 1000);
+                
+            } catch (error) {
+                container.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Test 2: Canvas generation like main app
+        async function test2() {
+            const canvas = document.getElementById('test-canvas');
+            const output = document.getElementById('test2-output');
+            const ctx = canvas.getContext('2d');
+            
+            output.innerHTML = '<p>Starting canvas test...</p>';
+            
+            // Clear canvas with white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            try {
+                // Create temp div like main app
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const qr = new QRCode(tempDiv, {
+                    text: "TEST QR 2",
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Wait and check
+                setTimeout(() => {
+                    const generatedCanvas = tempDiv.querySelector('canvas');
+                    const generatedImg = tempDiv.querySelector('img');
+                    
+                    output.innerHTML += `<p>Generated canvas: ${!!generatedCanvas}</p>`;
+                    output.innerHTML += `<p>Generated image: ${!!generatedImg}</p>`;
+                    
+                    if (generatedCanvas) {
+                        output.innerHTML += `<p>Canvas size: ${generatedCanvas.width}x${generatedCanvas.height}</p>`;
+                        ctx.drawImage(generatedCanvas, 0, 0, 256, 256);
+                        output.innerHTML += `<p>✅ Drew canvas to main canvas</p>`;
+                    } else if (generatedImg && generatedImg.complete) {
+                        ctx.drawImage(generatedImg, 0, 0, 256, 256);
+                        output.innerHTML += `<p>✅ Drew image to main canvas</p>`;
+                    } else {
+                        output.innerHTML += `<p>❌ No valid QR element found</p>`;
+                    }
+                    
+                    document.body.removeChild(tempDiv);
+                }, 1000);
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Test 3: Multiple canvas generation
+        function test3() {
+            const output = document.getElementById('test3-output');
+            output.innerHTML = '<p>Testing multiple canvas generation...</p>';
+            
+            const canvases = ['canvas-1', 'canvas-2', 'canvas-3'];
+            const texts = ['QR 1', 'QR 2', 'QR 3'];
+            
+            canvases.forEach((canvasId, index) => {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with white
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Generate QR
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                try {
+                    new QRCode(tempDiv, {
+                        text: texts[index],
+                        width: 128,
+                        height: 128,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    
+                    setTimeout(() => {
+                        const qrCanvas = tempDiv.querySelector('canvas');
+                        const qrImg = tempDiv.querySelector('img');
+                        
+                        if (qrCanvas) {
+                            ctx.drawImage(qrCanvas, 0, 0, 128, 128);
+                        } else if (qrImg && qrImg.complete) {
+                            ctx.drawImage(qrImg, 0, 0, 128, 128);
+                        }
+                        
+                        document.body.removeChild(tempDiv);
+                    }, 500 + index * 200);
+                    
+                } catch (error) {
+                    output.innerHTML += `<p>Error on canvas ${index + 1}: ${error.message}</p>`;
+                }
+            });
+        }
+
+        // Initialize
+        window.onload = checkLibraries;
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        canvas { border: 2px solid #000; margin: 10px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>QR Generation Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>Library Status</h2>
+        <div id="library-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test QR Generation</h2>
+        <button onclick="testQRGeneration()">Test QR Generation</button>
+        <div id="test-output"></div>
+        <canvas id="test-canvas" width="256" height="256"></canvas>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Log</h2>
+        <div id="debug-log"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="simple-qr.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(p);
+            console.log(message);
+        }
+
+        function checkLibraries() {
+            const statusDiv = document.getElementById('library-status');
+            let html = '';
+            
+            if (typeof QRCode !== 'undefined') {
+                html += '<p class="success">✅ QRCode.js library loaded</p>';
+                if (QRCode.CorrectLevel) {
+                    html += '<p class="success">✅ QRCode.CorrectLevel available</p>';
+                    log('QRCode library fully available', 'success');
+                } else {
+                    html += '<p class="error">❌ QRCode.CorrectLevel not available</p>';
+                    log('QRCode.CorrectLevel missing', 'error');
+                }
+            } else {
+                html += '<p class="error">❌ QRCode.js library not loaded</p>';
+                log('QRCode library not available', 'error');
+            }
+            
+            if (typeof SimpleQRCode !== 'undefined') {
+                html += '<p class="success">✅ SimpleQRCode fallback available</p>';
+                log('SimpleQRCode fallback available', 'success');
+            } else {
+                html += '<p class="error">❌ SimpleQRCode fallback not available</p>';
+                log('SimpleQRCode fallback not available', 'error');
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+
+        async function testQRGeneration() {
+            log('Starting QR generation test');
+            const canvas = document.getElementById('test-canvas');
+            const ctx = canvas.getContext('2d');
+            const outputDiv = document.getElementById('test-output');
+            
+            // Clear canvas and output
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            outputDiv.innerHTML = '';
+            
+            try {
+                // Test 1: QRCode.js library
+                if (typeof QRCode !== 'undefined') {
+                    log('Testing QRCode.js library');
+                    
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.style.top = '-9999px';
+                    document.body.appendChild(tempDiv);
+                    
+                    try {
+                        const qr = new QRCode(tempDiv, {
+                            text: "Hello World Test",
+                            width: 256,
+                            height: 256,
+                            colorDark: '#000000',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                        
+                        log('QRCode instance created, waiting for generation...');
+                        
+                        // Wait for generation
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        log(`TempDiv children: ${tempDiv.children.length}`);
+                        for (let i = 0; i < tempDiv.children.length; i++) {
+                            const child = tempDiv.children[i];
+                            log(`Child ${i}: ${child.tagName} (${child.className || 'no class'})`);
+                        }
+                        
+                        // Try to find canvas
+                        const generatedCanvas = tempDiv.querySelector('canvas');
+                        if (generatedCanvas) {
+                            log('Found generated canvas, copying to test canvas', 'success');
+                            ctx.drawImage(generatedCanvas, 0, 0, 256, 256);
+                            outputDiv.innerHTML = '<p class="success">✅ QR generated successfully using canvas</p>';
+                            return;
+                        }
+                        
+                        // Try to find image
+                        const generatedImg = tempDiv.querySelector('img');
+                        if (generatedImg) {
+                            log(`Found generated image. Complete: ${generatedImg.complete}, src: ${generatedImg.src.substring(0, 50)}...`);
+                            
+                            if (generatedImg.complete) {
+                                log('Image is complete, drawing to canvas', 'success');
+                                ctx.drawImage(generatedImg, 0, 0, 256, 256);
+                                outputDiv.innerHTML = '<p class="success">✅ QR generated successfully using image</p>';
+                                return;
+                            } else {
+                                log('Waiting for image to load...');
+                                await new Promise((resolve, reject) => {
+                                    const img = new Image();
+                                    img.onload = () => {
+                                        log('Image loaded, drawing to canvas', 'success');
+                                        ctx.drawImage(img, 0, 0, 256, 256);
+                                        outputDiv.innerHTML = '<p class="success">✅ QR generated successfully using loaded image</p>';
+                                        resolve();
+                                    };
+                                    img.onerror = () => {
+                                        log('Image load failed', 'error');
+                                        reject(new Error('Image load failed'));
+                                    };
+                                    img.src = generatedImg.src;
+                                });
+                                return;
+                            }
+                        }
+                        
+                        log('No canvas or image found in tempDiv', 'error');
+                        outputDiv.innerHTML = '<p class="error">❌ No canvas or image generated</p>';
+                        
+                    } finally {
+                        document.body.removeChild(tempDiv);
+                    }
+                } else {
+                    log('QRCode library not available, trying fallback', 'error');
+                }
+                
+                // Test 2: Fallback
+                if (typeof SimpleQRCode !== 'undefined') {
+                    log('Testing SimpleQRCode fallback');
+                    await SimpleQRCode.toCanvas(canvas, "Hello World Test", {
+                        width: 256,
+                        height: 256,
+                        color: {
+                            dark: '#000000',
+                            light: '#ffffff'
+                        }
+                    });
+                    log('Fallback QR generated successfully', 'success');
+                    outputDiv.innerHTML = '<p class="success">✅ QR generated using fallback</p>';
+                    return;
+                }
+                
+                log('No QR generation method available', 'error');
+                outputDiv.innerHTML = '<p class="error">❌ No QR generation method available</p>';
+                
+            } catch (error) {
+                log(`QR generation failed: ${error.message}`, 'error');
+                outputDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            checkLibraries();
+        });
+    </script>
+</body>
+</html>

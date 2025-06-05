@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator - Image Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .qr-display {
+            text-align: center;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            max-width: 250px;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🖼️ QR Generator - Image Upload Test</h1>
+        <p>Testing the modular image upload functionality for logos and backgrounds.</p>
+        
+        <div class="test-grid">
+            <!-- Logo Upload Test -->
+            <div class="test-section">
+                <h3>📋 Logo Upload Test</h3>
+                <input type="text" id="logo-text" value="Logo Test QR" placeholder="QR text content">
+                
+                <div class="upload-area" id="logo-upload-area">
+                    <input type="file" id="logo-file" accept="image/*" style="display: none;">
+                    <p>📁 Click or drag logo image here</p>
+                    <p><small>Supports: PNG, JPG, GIF</small></p>
+                </div>
+                
+                <div id="logo-preview"></div>
+                
+                <div class="qr-display">
+                    <canvas id="logo-qr-canvas" width="250" height="250"></canvas>
+                    <div id="logo-status" class="status info">Ready for logo test</div>
+                </div>
+                
+                <button class="btn-primary" onclick="generateLogoQR()">Generate with Logo</button>
+                <button class="btn-danger" onclick="clearLogo()">Clear Logo</button>
+            </div>
+
+            <!-- Background Upload Test -->
+            <div class="test-section">
+                <h3>🎨 Background Upload Test</h3>
+                <input type="text" id="bg-text" value="Background Test QR" placeholder="QR text content">
+                
+                <div class="upload-area" id="bg-upload-area">
+                    <input type="file" id="bg-file" accept="image/*" style="display: none;">
+                    <p>🖼️ Click or drag background image here</p>
+                    <p><small>Supports: PNG, JPG, GIF</small></p>
+                </div>
+                
+                <div id="bg-preview"></div>
+                
+                <div class="qr-display">
+                    <canvas id="bg-qr-canvas" width="250" height="250"></canvas>
+                    <div id="bg-status" class="status info">Ready for background test</div>
+                </div>
+                
+                <button class="btn-primary" onclick="generateBackgroundQR()">Generate with Background</button>
+                <button class="btn-danger" onclick="clearBackground()">Clear Background</button>
+            </div>
+        </div>
+
+        <!-- Combined Test -->
+        <div class="test-section">
+            <h3>🎯 Combined Test (Logo + Background)</h3>
+            <input type="text" id="combined-text" value="Combined Test QR" placeholder="QR text content">
+            
+            <div class="qr-display">
+                <canvas id="combined-qr-canvas" width="300" height="300"></canvas>
+                <div id="combined-status" class="status info">Ready for combined test</div>
+            </div>
+            
+            <button class="btn-success" onclick="generateCombinedQR()">Generate Combined QR</button>
+            <button class="btn-primary" onclick="testAllImageFeatures()">Test All Features</button>
+        </div>
+    </div>
+
+    <!-- QR Libraries -->  
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="simple-qr.js"></script>
+
+    <script type="module">
+        import ImageManager from './modules/ImageManager.js';
+        import QRLibraryManager from './modules/QRLibraryManager.js';
+        import NotificationManager from './modules/NotificationManager.js';
+
+        let imageManager, qrManager, notificationManager;
+        let logoImage = null, backgroundImage = null;
+
+        // Initialize managers
+        async function initialize() {
+            try {
+                notificationManager = new NotificationManager();
+                qrManager = new QRLibraryManager(notificationManager);
+                
+                // Create a mock QR generator object for ImageManager
+                const mockQRGenerator = {
+                    notificationManager: notificationManager,
+                    regenerateIfExists: () => console.log('Regenerate triggered')
+                };
+                
+                imageManager = new ImageManager(mockQRGenerator);
+                await qrManager.initialize();
+                
+                setupFileUploadHandlers();
+                console.log('✅ All managers initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize managers:', error);
+            }
+        }
+
+        function setupFileUploadHandlers() {
+            // Logo upload handlers
+            const logoArea = document.getElementById('logo-upload-area');
+            const logoFile = document.getElementById('logo-file');
+            
+            logoArea.addEventListener('click', () => logoFile.click());
+            logoFile.addEventListener('change', (e) => handleLogoUpload(e.target.files[0]));
+            
+            // Background upload handlers  
+            const bgArea = document.getElementById('bg-upload-area');
+            const bgFile = document.getElementById('bg-file');
+            
+            bgArea.addEventListener('click', () => bgFile.click());
+            bgFile.addEventListener('change', (e) => handleBackgroundUpload(e.target.files[0]));
+
+            // Drag and drop for logo
+            logoArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                logoArea.classList.add('dragover');
+            });
+            logoArea.addEventListener('dragleave', () => {
+                logoArea.classList.remove('dragover');
+            });
+            logoArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                logoArea.classList.remove('dragover');
+                handleLogoUpload(e.dataTransfer.files[0]);
+            });
+
+            // Drag and drop for background
+            bgArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                bgArea.classList.add('dragover');
+            });
+            bgArea.addEventListener('dragleave', () => {
+                bgArea.classList.remove('dragover');
+            });
+            bgArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                bgArea.classList.remove('dragover');
+                handleBackgroundUpload(e.dataTransfer.files[0]);
+            });
+        }
+
+        function handleLogoUpload(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    logoImage = img;
+                    showLogoPreview(e.target.result);
+                    updateStatus('logo-status', 'success', 'Logo loaded successfully!');
+                };
+                img.onerror = () => {
+                    updateStatus('logo-status', 'error', 'Failed to load logo image');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleBackgroundUpload(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    backgroundImage = img;
+                    showBackgroundPreview(e.target.result);
+                    updateStatus('bg-status', 'success', 'Background loaded successfully!');
+                };
+                img.onerror = () => {
+                    updateStatus('bg-status', 'error', 'Failed to load background image');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showLogoPreview(src) {
+            document.getElementById('logo-preview').innerHTML = 
+                `<img src="${src}" class="preview-image" alt="Logo preview">`;
+        }
+
+        function showBackgroundPreview(src) {
+            document.getElementById('bg-preview').innerHTML = 
+                `<img src="${src}" class="preview-image" alt="Background preview">`;
+        }
+
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+        }
+
+        async function generateLogoQR() {
+            const text = document.getElementById('logo-text').value || 'Logo Test';
+            const canvas = document.getElementById('logo-qr-canvas');
+            
+            updateStatus('logo-status', 'info', 'Generating QR with logo...');
+            
+            try {
+                const options = {
+                    canvas: canvas,
+                    width: 250,
+                    height: 250,
+                    color: { dark: '#000000', light: '#ffffff' }
+                };
+
+                const result = await qrManager.generateQR(text, options);
+                
+                if (result.success && logoImage) {
+                    // Add logo overlay
+                    const ctx = canvas.getContext('2d');
+                    const logoSize = 50;
+                    const x = (canvas.width - logoSize) / 2;
+                    const y = (canvas.height - logoSize) / 2;
+                    
+                    // Add white background for logo
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(x - 5, y - 5, logoSize + 10, logoSize + 10);
+                    
+                    // Draw logo
+                    ctx.drawImage(logoImage, x, y, logoSize, logoSize);
+                    
+                    updateStatus('logo-status', 'success', 'QR with logo generated successfully!');
+                } else if (result.success) {
+                    updateStatus('logo-status', 'success', 'QR generated (no logo uploaded)');
+                } else {
+                    throw new Error(result.error || 'Generation failed');
+                }
+            } catch (error) {
+                updateStatus('logo-status', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        async function generateBackgroundQR() {
+            const text = document.getElementById('bg-text').value || 'Background Test';
+            const canvas = document.getElementById('bg-qr-canvas');
+            
+            updateStatus('bg-status', 'info', 'Generating QR with background...');
+            
+            try {
+                if (backgroundImage) {
+                    // Draw background first
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                }
+
+                const options = {
+                    canvas: canvas,
+                    width: 250,
+                    height: 250,
+                    color: { dark: '#000000', light: 'rgba(255,255,255,0.9)' }
+                };
+
+                const result = await qrManager.generateQR(text, options);
+                
+                if (result.success) {
+                    updateStatus('bg-status', 'success', 
+                        backgroundImage ? 'QR with background generated!' : 'QR generated (no background uploaded)');
+                } else {
+                    throw new Error(result.error || 'Generation failed');
+                }
+            } catch (error) {
+                updateStatus('bg-status', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        async function generateCombinedQR() {
+            const text = document.getElementById('combined-text').value || 'Combined Test';
+            const canvas = document.getElementById('combined-qr-canvas');
+            
+            updateStatus('combined-status', 'info', 'Generating combined QR...');
+            
+            try {
+                // Draw background if available
+                if (backgroundImage) {
+                    const ctx = canvas.getContext('2d');  
+                    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                }
+
+                const options = {
+                    canvas: canvas,
+                    width: 300,
+                    height: 300,
+                    color: { 
+                        dark: '#000000', 
+                        light: backgroundImage ? 'rgba(255,255,255,0.9)' : '#ffffff' 
+                    }
+                };
+
+                const result = await qrManager.generateQR(text, options);
+                
+                if (result.success) {
+                    // Add logo if available
+                    if (logoImage) {
+                        const ctx = canvas.getContext('2d');
+                        const logoSize = 60;
+                        const x = (canvas.width - logoSize) / 2;
+                        const y = (canvas.height - logoSize) / 2;
+                        
+                        // White background for logo
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(x - 8, y - 8, logoSize + 16, logoSize + 16);
+                        
+                        // Draw logo
+                        ctx.drawImage(logoImage, x, y, logoSize, logoSize);
+                    }
+                    
+                    const features = [];
+                    if (backgroundImage) features.push('background');
+                    if (logoImage) features.push('logo');
+                    
+                    updateStatus('combined-status', 'success', 
+                        `Combined QR generated with: ${features.join(' + ') || 'basic styling'}`);
+                } else {
+                    throw new Error(result.error || 'Generation failed');
+                }
+            } catch (error) {
+                updateStatus('combined-status', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        function clearLogo() {
+            logoImage = null;
+            document.getElementById('logo-preview').innerHTML = '';
+            document.getElementById('logo-file').value = '';
+            updateStatus('logo-status', 'info', 'Logo cleared');
+        }
+
+        function clearBackground() {
+            backgroundImage = null;
+            document.getElementById('bg-preview').innerHTML = '';
+            document.getElementById('bg-file').value = '';
+            updateStatus('bg-status', 'info', 'Background cleared');
+        }
+
+        async function testAllImageFeatures() {
+            updateStatus('combined-status', 'info', 'Running comprehensive image tests...');
+            
+            // Test basic QR generation
+            await generateCombinedQR();
+            
+            setTimeout(() => {
+                updateStatus('combined-status', 'success', 
+                    '🎉 Image upload tests completed! Check individual sections for results.');
+            }, 1000);
+        }
+
+        // Make functions available globally
+        window.generateLogoQR = generateLogoQR;
+        window.generateBackgroundQR = generateBackgroundQR;
+        window.generateCombinedQR = generateCombinedQR;
+        window.clearLogo = clearLogo;
+        window.clearBackground = clearBackground;
+        window.testAllImageFeatures = testAllImageFeatures;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

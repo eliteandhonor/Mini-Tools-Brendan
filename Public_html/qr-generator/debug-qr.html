@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        canvas { border: 2px solid #000; margin: 10px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>QR Code Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>Library Status</h2>
+        <div id="library-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 1: Basic QR with QRCode.js</h2>
+        <button onclick="testBasicQR()">Generate Basic QR</button>
+        <div id="basic-qr"></div>
+        <canvas id="basic-canvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: QR with SimpleQRCode Fallback</h2>
+        <button onclick="testFallbackQR()">Generate Fallback QR</button>
+        <canvas id="fallback-canvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Manual Canvas Drawing</h2>
+        <button onclick="testManualDraw()">Draw Test Pattern</button>
+        <canvas id="manual-canvas" width="200" height="200"></canvas>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output"></div>
+    </div>
+
+    <!-- QR Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="simple-qr.js"></script>
+    
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function addToConsole(message, type = 'log') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleOutput.appendChild(div);
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        // Check library status
+        function checkLibraries() {
+            const status = document.getElementById('library-status');
+            let html = '';
+            
+            if (typeof QRCode !== 'undefined') {
+                html += '<div class="success">✅ QRCode.js library loaded</div>';
+                if (QRCode.CorrectLevel) {
+                    html += '<div class="success">✅ QRCode.CorrectLevel available</div>';
+                } else {
+                    html += '<div class="error">❌ QRCode.CorrectLevel not available</div>';
+                }
+            } else {
+                html += '<div class="error">❌ QRCode.js library not loaded</div>';
+            }
+            
+            if (typeof SimpleQRCode !== 'undefined') {
+                html += '<div class="success">✅ SimpleQRCode fallback available</div>';
+            } else {
+                html += '<div class="error">❌ SimpleQRCode fallback not available</div>';
+            }
+            
+            status.innerHTML = html;
+        }
+        
+        // Test basic QR generation
+        function testBasicQR() {
+            console.log('Testing basic QR generation...');
+            
+            if (typeof QRCode === 'undefined') {
+                console.error('QRCode library not available');
+                return;
+            }
+            
+            try {
+                const div = document.getElementById('basic-qr');
+                div.innerHTML = ''; // Clear previous
+                
+                const qr = new QRCode(div, {
+                    text: "https://example.com",
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                console.log('Basic QR generated successfully');
+                
+                // Try to copy to canvas after a delay
+                setTimeout(() => {
+                    const canvas = document.getElementById('basic-canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const generatedCanvas = div.querySelector('canvas');
+                    const generatedImg = div.querySelector('img');
+                    
+                    if (generatedCanvas) {
+                        console.log('Found generated canvas, copying...');
+                        ctx.drawImage(generatedCanvas, 0, 0, 200, 200);
+                    } else if (generatedImg && generatedImg.complete) {
+                        console.log('Found generated image, copying...');
+                        ctx.drawImage(generatedImg, 0, 0, 200, 200);
+                    } else {
+                        console.error('No canvas or image found in generated QR');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Basic QR generation failed:', error);
+            }
+        }
+        
+        // Test fallback QR generation
+        async function testFallbackQR() {
+            console.log('Testing fallback QR generation...');
+            
+            if (typeof SimpleQRCode === 'undefined') {
+                console.error('SimpleQRCode not available');
+                return;
+            }
+            
+            try {
+                const canvas = document.getElementById('fallback-canvas');
+                await SimpleQRCode.toCanvas(canvas, "https://example.com", {
+                    width: 200,
+                    height: 200,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                });
+                
+                console.log('Fallback QR generated successfully');
+            } catch (error) {
+                console.error('Fallback QR generation failed:', error);
+            }
+        }
+        
+        // Test manual canvas drawing
+        function testManualDraw() {
+            console.log('Testing manual canvas drawing...');
+            
+            const canvas = document.getElementById('manual-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 200, 200);
+            
+            // Draw a simple checkerboard pattern
+            ctx.fillStyle = '#000000';
+            for (let x = 0; x < 200; x += 20) {
+                for (let y = 0; y < 200; y += 20) {
+                    if ((x + y) % 40 === 0) {
+                        ctx.fillRect(x, y, 20, 20);
+                    }
+                }
+            }
+            
+            console.log('Manual drawing completed');
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            checkLibraries();
+        });
+    </script>
+</body>
+</html>

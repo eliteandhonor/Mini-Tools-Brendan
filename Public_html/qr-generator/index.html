@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Tools - QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-qrcode"></i> QR Code Generator</h1>
+            <p>Create professional QR codes with custom designs and logos</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav">
+            <a href="../">
+                <i class="fas fa-home"></i>
+                Back to Mini Tools
+            </a>
+        </div>
+
+        <div class="generator-container">
+            <div class="input-section">
+                <div class="input-card">
+                    <h2>Generate QR Code</h2>
+                    
+                    <!-- QR Type Selector -->
+                    <div class="type-selector">
+                        <label>QR Code Type:</label>
+                        <div class="type-buttons">
+                            <button class="type-btn active" data-type="text">
+                                <i class="fas fa-font"></i>
+                                <span>Text</span>
+                            </button>
+                            <button class="type-btn" data-type="url">
+                                <i class="fas fa-link"></i>
+                                <span>URL</span>
+                            </button>
+                            <button class="type-btn" data-type="email">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email</span>
+                            </button>
+                            <button class="type-btn" data-type="phone">
+                                <i class="fas fa-phone"></i>
+                                <span>Phone</span>
+                            </button>
+                            <button class="type-btn" data-type="sms">
+                                <i class="fas fa-sms"></i>
+                                <span>SMS</span>
+                            </button>
+                            <button class="type-btn" data-type="wifi">
+                                <i class="fas fa-wifi"></i>
+                                <span>WiFi</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input Forms -->
+                    <div class="input-forms">                        <!-- Text Input -->
+                        <div class="input-form active" id="text-form">
+                            <label for="text-input">Enter Text:</label>
+                            <textarea id="text-input" placeholder="Enter any text to generate QR code" rows="4">Hello World! This is a test QR code.</textarea>
+                        </div>
+
+                        <!-- URL Input -->
+                        <div class="input-form" id="url-form">
+                            <label for="url-input">Enter URL:</label>
+                            <input type="url" id="url-input" placeholder="https://example.com">
+                        </div>
+
+                        <!-- Email Input -->
+                        <div class="input-form" id="email-form">
+                            <label for="email-to">Email Address:</label>
+                            <input type="email" id="email-to" placeholder="recipient@example.com">
+                            <label for="email-subject">Subject (optional):</label>
+                            <input type="text" id="email-subject" placeholder="Email subject">
+                            <label for="email-body">Message (optional):</label>
+                            <textarea id="email-body" placeholder="Email message" rows="3"></textarea>
+                        </div>
+
+                        <!-- Phone Input -->
+                        <div class="input-form" id="phone-form">
+                            <label for="phone-input">Phone Number:</label>
+                            <input type="tel" id="phone-input" placeholder="+1234567890">
+                        </div>
+
+                        <!-- SMS Input -->
+                        <div class="input-form" id="sms-form">
+                            <label for="sms-number">Phone Number:</label>
+                            <input type="tel" id="sms-number" placeholder="+1234567890">
+                            <label for="sms-message">Message (optional):</label>
+                            <textarea id="sms-message" placeholder="SMS message" rows="3"></textarea>
+                        </div>
+
+                        <!-- WiFi Input -->
+                        <div class="input-form" id="wifi-form">
+                            <label for="wifi-ssid">Network Name (SSID):</label>
+                            <input type="text" id="wifi-ssid" placeholder="My WiFi Network">
+                            <label for="wifi-password">Password:</label>
+                            <input type="password" id="wifi-password" placeholder="WiFi password">
+                            <label for="wifi-security">Security Type:</label>
+                            <select id="wifi-security">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">None (Open)</option>
+                            </select>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="wifi-hidden">
+                                    Hidden Network
+                                </label>
+                            </div>
+                        </div>
+                    </div>                    <!-- Customization Options -->
+                    <div class="customization-section">
+                        <h3>Customization</h3>
+                        <div class="customization-grid">
+                            <div class="custom-option">
+                                <label for="qr-size">Size:</label>
+                                <select id="qr-size">
+                                    <option value="200">Small (200px)</option>
+                                    <option value="300" selected>Medium (300px)</option>
+                                    <option value="400">Large (400px)</option>
+                                    <option value="500">Extra Large (500px)</option>
+                                </select>
+                            </div>
+                            <div class="custom-option">
+                                <label for="qr-format">Format:</label>
+                                <select id="qr-format">
+                                    <option value="png" selected>PNG</option>
+                                    <option value="jpg">JPEG</option>
+                                    <option value="svg">SVG</option>
+                                </select>
+                            </div>
+                            <div class="custom-option">
+                                <label for="error-correction">Error Correction:</label>
+                                <select id="error-correction">
+                                    <option value="L">Low (7%)</option>
+                                    <option value="M" selected>Medium (15%)</option>
+                                    <option value="Q">Quartile (25%)</option>
+                                    <option value="H">High (30%)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Design & Logo Options -->
+                        <div class="design-section">
+                            <h4><i class="fas fa-palette"></i> Design & Logo</h4>
+                              <!-- Background Image Upload -->
+                            <div class="background-upload-section">
+                                <label for="background-upload">QR Background Image:</label>
+                                <div class="upload-area" id="background-upload-area">
+                                    <input type="file" id="background-upload" accept="image/*" hidden>
+                                    <div class="upload-content">
+                                        <i class="fas fa-image"></i>
+                                        <p>Upload background image</p>
+                                        <small>Your image will fill the entire QR code</small>
+                                    </div>
+                                    <div class="uploaded-background" id="uploaded-background">
+                                        <img id="background-preview" alt="Background preview">
+                                        <button type="button" id="remove-background" class="remove-btn" title="Remove background">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="background-options" id="background-options">
+                                    <div class="background-option">
+                                        <label for="background-opacity">QR Transparency:</label>
+                                        <select id="background-opacity">
+                                            <option value="0.3">Light (30%)</option>
+                                            <option value="0.5" selected>Medium (50%)</option>
+                                            <option value="0.7">Strong (70%)</option>
+                                            <option value="0.9">Very Strong (90%)</option>
+                                        </select>
+                                    </div>
+                                    <div class="background-option">
+                                        <label for="background-fit">Image Fit:</label>
+                                        <select id="background-fit">
+                                            <option value="cover" selected>Fill (Cover)</option>
+                                            <option value="contain">Fit (Contain)</option>
+                                            <option value="fill">Stretch (Fill)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Logo Upload -->
+                            <div class="logo-upload-section">
+                                <label for="logo-upload">Add Center Logo:</label>
+                                <div class="upload-area" id="upload-area">
+                                    <input type="file" id="logo-upload" accept="image/*" hidden>
+                                    <div class="upload-content">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Click to upload or drag & drop</p>
+                                        <small>PNG, JPG, GIF up to 5MB</small>
+                                    </div>                                    <div class="uploaded-logo" id="uploaded-logo">
+                                        <img id="logo-preview" alt="Logo preview">
+                                        <button type="button" id="remove-logo" class="remove-btn" title="Remove logo">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="logo-options" id="logo-options">
+                                    <div class="logo-option">
+                                        <label for="logo-size">Logo Size:</label>
+                                        <select id="logo-size">
+                                            <option value="10">Small (10%)</option>
+                                            <option value="15" selected>Medium (15%)</option>
+                                            <option value="20">Large (20%)</option>
+                                            <option value="25">Extra Large (25%)</option>
+                                        </select>
+                                    </div>
+                                    <div class="logo-option">
+                                        <label for="logo-background">Background:</label>
+                                        <select id="logo-background">
+                                            <option value="none">Transparent</option>
+                                            <option value="white" selected>White Circle</option>
+                                            <option value="rounded">Rounded Square</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Color Customization -->
+                            <div class="color-section">
+                                <h5>Colors</h5>
+                                <div class="color-options">
+                                    <div class="color-option">
+                                        <label for="foreground-color">QR Color:</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="foreground-color" value="#000000">
+                                            <input type="text" id="foreground-hex" value="#000000" placeholder="#000000">
+                                        </div>
+                                    </div>
+                                    <div class="color-option">
+                                        <label for="background-color">Background:</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="background-color" value="#ffffff">
+                                            <input type="text" id="background-hex" value="#ffffff" placeholder="#ffffff">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Preset Color Schemes -->
+                                <div class="color-presets">
+                                    <label>Quick Presets:</label>
+                                    <div class="preset-buttons">
+                                        <button type="button" class="preset-btn" data-fg="#000000" data-bg="#ffffff">                                            <div class="preset-preview classic">
+                                                <div class="preview-pattern"></div>
+                                            </div>
+                                            <span>Classic</span>
+                                        </button>
+                                        <button type="button" class="preset-btn" data-fg="#ffffff" data-bg="#000000">                                            <div class="preset-preview inverted">
+                                                <div class="preview-pattern"></div>
+                                            </div>
+                                            <span>Inverted</span>
+                                        </button>
+                                        <button type="button" class="preset-btn" data-fg="#1e3a8a" data-bg="#dbeafe">                                            <div class="preset-preview blue">
+                                                <div class="preview-pattern"></div>
+                                            </div>
+                                            <span>Blue</span>
+                                        </button>
+                                        <button type="button" class="preset-btn" data-fg="#dc2626" data-bg="#fef2f2">                                            <div class="preset-preview red">
+                                                <div class="preview-pattern"></div>
+                                            </div>
+                                            <span>Red</span>
+                                        </button>
+                                        <button type="button" class="preset-btn" data-fg="#059669" data-bg="#ecfdf5">                                            <div class="preset-preview green">
+                                                <div class="preview-pattern"></div>
+                                            </div>
+                                            <span>Green</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="generate-btn" class="generate-btn">
+                        <i class="fas fa-magic"></i>
+                        Generate QR Code
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="qr-display">
+                    <div class="qr-placeholder" id="qr-placeholder">
+                        <i class="fas fa-qrcode"></i>
+                        <p>Your QR code will appear here</p>
+                    </div>                    <div class="qr-result" id="qr-result">
+                        <canvas id="qr-canvas"></canvas>
+                        <div class="qr-info">
+                            <p id="qr-info-text">QR Code generated successfully</p>                            <div class="qr-actions">
+                                <button id="fullscreen-qr" class="action-btn">
+                                    <i class="fas fa-expand"></i>
+                                    Full Screen
+                                </button>
+                                <button id="download-large" class="action-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download Large
+                                </button>
+                                <button id="download-png" class="action-btn">
+                                    <i class="fas fa-file-image"></i>
+                                    Download PNG
+                                </button>
+                                <button id="copy-image" class="action-btn">
+                                    <i class="fas fa-copy"></i>
+                                    Copy Image
+                                </button>
+                                <button id="print-qr" class="action-btn">
+                                    <i class="fas fa-print"></i>
+                                    Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supporting Copy Section -->
+        <div class="content-section">
+            <div class="qr-info-content">                <h2>About QR Code Generator</h2>
+                <p>Generate high-quality, customized QR codes for any purpose with our advanced QR code generator. Whether you need to share website links, contact information, WiFi credentials, or plain text, our tool creates professional QR codes with custom colors, logos, and designs that work reliably across all devices and scanners.</p>
+                
+                <p>Our generator supports multiple data types, custom branding with logo uploads, color schemes, and formats, allowing you to create QR codes optimized for specific use cases. With customizable size options, error correction levels, drag-and-drop logo embedding, and multiple export formats, you get professional-grade branded QR codes suitable for both digital and print media.</p>
+
+                <h3>QR Code Types & Applications</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-link"></i> URL QR Codes</h4>
+                        <p>Create QR codes that redirect to websites, landing pages, or online resources. Perfect for marketing materials, business cards, and promotional content. Simply scan to visit the encoded URL instantly.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-wifi"></i> WiFi QR Codes</h4>
+                        <p>Generate QR codes containing WiFi network credentials. Guests can scan the code to automatically connect to your network without manually entering passwords. Supports WPA, WEP, and open networks.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-envelope"></i> Contact Information</h4>
+                        <p>Encode email addresses, phone numbers, and SMS details into QR codes. Great for business networking, allowing quick contact sharing and direct communication initiation through scanning.</p>
+                    </div>
+                      <div class="feature-card">
+                        <h4><i class="fas fa-cog"></i> Advanced Customization</h4>
+                        <p>Choose from multiple sizes (200px to 500px), formats (PNG, JPEG, SVG), and error correction levels. Higher error correction allows QR codes to remain scannable even if partially damaged or obscured.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-palette"></i> Custom Design & Branding</h4>
+                        <p>Upload your own logos and images to embed in QR codes. Customize colors with preset schemes or manual color picker. Add branded backgrounds, adjust logo sizing, and create professional-looking QR codes that match your brand identity.</p>
+                    </div>
+                </div>
+
+                <h3>How to Use the QR Generator</h3>
+                <ol class="usage-steps">
+                    <li><strong>Select QR Type:</strong> Choose the type of data you want to encode (Text, URL, Email, Phone, SMS, or WiFi).</li>
+                    <li><strong>Enter Information:</strong> Fill in the required fields for your selected QR code type with accurate information.</li>
+                    <li><strong>Customize Settings:</strong> Select your preferred size, format, and error correction level based on your intended use.</li>
+                    <li><strong>Generate & Download:</strong> Click generate to create your QR code, then download, copy, or print as needed.</li>
+                    <li><strong>Test Your QR Code:</strong> Always test your generated QR code with multiple devices to ensure it works correctly.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section" itemscope itemtype="https://schema.org/FAQPage">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">What's the difference between error correction levels?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>Error correction levels determine how much damage a QR code can sustain while remaining scannable. Low (7%) is suitable for clean, digital displays. Medium (15%) works well for most printed materials. Quartile (25%) is ideal for outdoor use or environments where damage is likely. High (30%) provides maximum resilience but results in denser, more complex codes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">Which format should I choose for my QR code?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>PNG is recommended for most uses as it provides lossless compression and transparency support. JPEG is suitable when file size is a concern, though it uses lossy compression. SVG is ideal for scalable graphics that need to be resized without quality loss, perfect for professional printing and large displays.</p>
+                    </div>
+                </div>
+            </div>            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">How much data can a QR code store?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>QR codes can store varying amounts of data depending on the character type: up to 7,089 numeric characters, 4,296 alphanumeric characters, or 2,953 binary bytes. However, for optimal scanning reliability, we recommend keeping content concise. URLs should be shortened when possible, and text should be under 300 characters for best results.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">Can I add my company logo to QR codes?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>Yes! You can upload any image file (PNG, JPG, GIF up to 5MB) to embed as a logo in your QR codes. Choose from different logo sizes (10%-25% of QR code size) and background styles including transparent, white circle, or rounded square. The logo is placed in the center and the QR code's error correction ensures it remains scannable.</p>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+
+    <!-- Full Screen QR Modal -->
+    <div id="fullscreen-modal" class="fullscreen-modal">
+        <div class="fullscreen-content">
+            <button id="close-fullscreen" class="close-fullscreen" title="Close Fullscreen">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="fullscreen-qr-container">
+                <canvas id="fullscreen-qr-canvas"></canvas>
+                <div class="fullscreen-info">
+                    <h3 id="fullscreen-title">QR Code</h3>
+                    <p id="fullscreen-description">Scan with your device camera</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Mini Tools - QR Code Generator",
+        "url": "qr-generator.html",
+        "description": "Professional QR code generator supporting URLs, WiFi, contact info, and more with customizable formats and error correction.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "Mini Tools"
+        }    }
+    </script>    <!-- QR Code Library with multiple fallbacks -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Primary fallback CDN if first one fails
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <script>
+        // Secondary fallback using different CDN
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://unpkg.com/qrcode-js@latest/qrcode.min.js"><\/script>');
+        }
+    </script>
+    <!-- Local fallback implementation -->
+    <script src="simple-qr.js"></script>
+    
+    <!-- Modular Application Script -->
+    <script type="module" src="script-modular.js"></script>
+    
+    <!-- Fallback for non-module browsers -->
+    <script nomodule>
+        // Fallback to original script for browsers that don't support modules
+        console.warn('ES6 modules not supported, loading fallback script');
+        var script = document.createElement('script');
+        script.src = 'script.js';
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

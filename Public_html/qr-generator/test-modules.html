@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator Module Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        #test-results { margin-top: 20px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #qr-canvas { border: 1px solid #ccc; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>QR Generator Module Test</h1>
+    
+    <div id="test-results">
+        <div class="status info">Loading modules...</div>
+    </div>
+    
+    <div>
+        <input type="text" id="text-input" placeholder="Enter test text" value="Hello, World!">
+        <button onclick="testQRGeneration()">Test QR Generation</button>
+    </div>
+    
+    <canvas id="qr-canvas" width="300" height="300"></canvas>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="simple-qr.js"></script>
+    
+    <script type="module">
+        import { QRLibraryManager } from './modules/QRLibraryManager.js';
+        import { DataValidator } from './modules/DataValidator.js';
+        import { NotificationManager } from './modules/NotificationManager.js';
+        
+        let qrLibraryManager, dataValidator, notificationManager;
+        
+        async function initializeTest() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            try {
+                // Test module imports
+                resultsDiv.innerHTML += '<div class="status info">Testing module imports...</div>';
+                
+                notificationManager = new NotificationManager();
+                resultsDiv.innerHTML += '<div class="status success">✅ NotificationManager loaded</div>';
+                
+                dataValidator = new DataValidator();
+                resultsDiv.innerHTML += '<div class="status success">✅ DataValidator loaded</div>';
+                
+                qrLibraryManager = new QRLibraryManager();
+                resultsDiv.innerHTML += '<div class="status success">✅ QRLibraryManager loaded</div>';
+                
+                // Test library validation
+                const isValid = qrLibraryManager.validateLibraries();
+                if (isValid) {
+                    resultsDiv.innerHTML += '<div class="status success">✅ QR libraries validated successfully</div>';
+                } else {
+                    resultsDiv.innerHTML += '<div class="status error">❌ QR libraries validation failed</div>';
+                }
+                
+                // Make modules global for testing
+                window.qrLibraryManager = qrLibraryManager;
+                window.dataValidator = dataValidator;
+                window.notificationManager = notificationManager;
+                
+                resultsDiv.innerHTML += '<div class="status success">🎉 All modules loaded successfully!</div>';
+                
+            } catch (error) {
+                console.error('Module test error:', error);
+                resultsDiv.innerHTML += `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Global function for button
+        window.testQRGeneration = async function() {
+            const resultsDiv = document.getElementById('test-results');
+            const canvas = document.getElementById('qr-canvas');
+            const textInput = document.getElementById('text-input');
+            
+            try {
+                resultsDiv.innerHTML += '<div class="status info">Testing QR generation...</div>';
+                
+                const text = textInput.value.trim() || 'Hello, World!';
+                const options = {
+                    width: 300,
+                    height: 300,
+                    errorCorrectionLevel: 'M',
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                };
+                
+                await qrLibraryManager.generateQRCode(canvas, text, options);
+                resultsDiv.innerHTML += '<div class="status success">✅ QR code generated successfully!</div>';
+                
+            } catch (error) {
+                console.error('QR generation error:', error);
+                resultsDiv.innerHTML += `<div class="status error">❌ QR generation failed: ${error.message}</div>`;
+            }
+        };
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeTest);
+        } else {
+            initializeTest();
+        }
+    </script>
+</body>
+</html>

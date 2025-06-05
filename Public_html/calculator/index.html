@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Tools - Advanced Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">            <div class="brand">
+                <a href="../" class="brand-link">
+                    <i class="fas fa-calculator brand-icon"></i>
+                    <h1>Mini Tools</h1>
+                </a>
+                <span class="app-name">Calculator Pro</span>
+            </div>
+            <div class="header-controls">
+                <button id="history-toggle" class="control-btn" title="Toggle History">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button id="theme-switcher" class="control-btn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="calculator-container">
+            <div class="calculator">
+                <div class="display-section">
+                    <div class="expression" id="expression"></div>
+                    <div class="display">
+                        <input type="text" id="result" readonly placeholder="0" aria-label="Calculator Display">
+                    </div>
+                </div>
+                
+                <div class="buttons-grid">
+                    <!-- Row 1 -->
+                    <button class="btn function" data-action="clear-all">AC</button>
+                    <button class="btn function" data-action="clear">C</button>                    <button class="btn function" data-action="backspace" title="Backspace">
+                        <i class="fas fa-backspace"></i>
+                    </button>
+                    <button class="btn operator" data-value="/">÷</button>
+                    
+                    <!-- Row 2 -->
+                    <button class="btn number" data-value="7">7</button>
+                    <button class="btn number" data-value="8">8</button>
+                    <button class="btn number" data-value="9">9</button>
+                    <button class="btn operator" data-value="*">×</button>
+                    
+                    <!-- Row 3 -->
+                    <button class="btn number" data-value="4">4</button>
+                    <button class="btn number" data-value="5">5</button>
+                    <button class="btn number" data-value="6">6</button>
+                    <button class="btn operator" data-value="-">−</button>
+                    
+                    <!-- Row 4 -->
+                    <button class="btn number" data-value="1">1</button>
+                    <button class="btn number" data-value="2">2</button>
+                    <button class="btn number" data-value="3">3</button>
+                    <button class="btn operator" data-value="+">+</button>
+                    
+                    <!-- Row 5 -->
+                    <button class="btn function" data-action="percent">%</button>
+                    <button class="btn number zero" data-value="0">0</button>
+                    <button class="btn number" data-value=".">.</button>
+                    <button class="btn equals" data-action="calculate">=</button>
+                </div>
+            </div>
+
+            <div class="history-panel" id="history-panel">
+                <div class="history-header">
+                    <h3>History</h3>
+                    <button id="clear-history" class="clear-history-btn" title="Clear History">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="history-list">
+                    <div class="history-empty">No calculations yet</div>
+                </div>
+            </div>        </div>
+
+        <!-- Supporting Copy Section -->
+        <div class="content-section">
+            <div class="calculator-info">
+                <h2>About Our Advanced Calculator</h2>
+                <p>Our professional calculator combines powerful functionality with an intuitive interface, making complex calculations simple and accessible. Whether you're performing basic arithmetic, working with percentages, or need a reliable tool for daily calculations, this calculator delivers precision and convenience.</p>
+                
+                <p>The calculator features a sophisticated calculation engine that handles floating-point arithmetic with precision, prevents common errors like division by zero, and formats results for optimal readability. With full keyboard support, calculation history, and responsive design, it's perfect for students, professionals, and anyone who needs reliable mathematical calculations.</p>
+
+                <h3>Key Features & Formulas</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-percent"></i> Percentage Calculations</h4>
+                        <p>Convert any number to its percentage equivalent using the formula: <strong>Result = Number ÷ 100</strong>. For example, 25% equals 0.25, making it easy to calculate discounts, tips, tax rates, and statistical percentages in real-world scenarios.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-calculator"></i> Basic Arithmetic</h4>
+                        <p>Perform fundamental operations including addition (+), subtraction (−), multiplication (×), and division (÷). The calculator follows standard mathematical order of operations and handles decimal precision automatically, ensuring accurate results for both simple and complex calculations.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-history"></i> Calculation History</h4>
+                        <p>Access your previous calculations instantly with our built-in history feature. Each calculation is stored with its complete expression and result, allowing you to reference past work, verify calculations, or reuse previous results in new computations.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-keyboard"></i> Keyboard Support</h4>
+                        <p>Use your keyboard for faster input with full support for number keys, operators (+, -, *, /), Enter for equals, Escape to clear, and Backspace to delete. This makes the calculator ideal for rapid data entry and professional use where speed matters.</p>
+                    </div>
+                </div>
+
+                <h3>How to Use the Calculator</h3>
+                <ol class="usage-steps">
+                    <li><strong>Basic Calculations:</strong> Click numbers and operators in sequence, then press equals (=) or Enter to get results.</li>
+                    <li><strong>Percentage Mode:</strong> Enter a number and click the % button to convert to decimal form (e.g., 20% becomes 0.2).</li>
+                    <li><strong>History Access:</strong> Click the history icon to view past calculations and click any result to reuse it.</li>
+                    <li><strong>Error Recovery:</strong> Use C to clear current input, AC to clear everything, or the backspace button to delete the last digit.</li>
+                    <li><strong>Theme Toggle:</strong> Switch between light and dark modes using the theme button for comfortable viewing in any environment.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section" itemscope itemtype="https://schema.org/FAQPage">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">How accurate is this calculator for financial calculations?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>Our calculator uses JavaScript's native floating-point arithmetic with precision handling up to 12 significant digits. For financial calculations, results are accurate for typical monetary amounts. However, for critical financial decisions involving large sums or requiring exact decimal precision, we recommend using specialized financial software or consulting with a financial professional.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">Can I use keyboard shortcuts with this calculator?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>Yes! The calculator supports full keyboard input including number keys (0-9), operators (+, -, *, /), Enter or = for calculations, Escape to clear all, Delete to clear current input, Backspace to delete last digit, and % for percentage calculations. This makes it ideal for fast data entry and professional use.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <h3 itemprop="name">Is my calculation history saved permanently?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        <p>Your calculation history is stored locally in your browser and persists between sessions. The calculator keeps up to 50 recent calculations. However, clearing your browser data, using incognito/private browsing mode, or switching browsers will reset the history. For permanent record-keeping of important calculations, we recommend copying results to a separate document.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Mini Tools - Advanced Calculator",
+        "url": "calculator.html",
+        "description": "Professional online calculator with history, keyboard support, and advanced features for accurate mathematical calculations.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "Mini Tools"
+        }
+    }
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html>

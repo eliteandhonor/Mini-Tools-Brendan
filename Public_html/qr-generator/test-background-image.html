@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Image Feature Test - Mini Tools QR Generator</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #333;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-result {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .test-result.success { 
+            background: #f0fff4; 
+            border: 1px solid #4a934a; 
+        }
+        .cta {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .cta a:hover {
+            transform: translateY(-2px);
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .test-steps {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .test-steps h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .test-steps ol {
+            margin: 0;
+        }
+        .test-steps li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🖼️ QR Generator Background Image Feature - Test Page</h1>
+        
+        <div class="test-result success">
+            <h3>✅ Background Image Feature Ready for Testing</h3>
+            <p>The Mini Tools QR Generator now includes the ability to upload custom background images that fill the entire QR code area with the QR pattern overlaid transparently on top!</p>
+        </div>
+
+        <h3>🎨 New Background Image Features:</h3>
+        <ul class="feature-list">
+            <li><strong>Image Upload:</strong> Upload any image (PNG, JPG, GIF up to 5MB) as QR background</li>
+            <li><strong>Full Area Coverage:</strong> Background image fills the entire QR code area</li>
+            <li><strong>Transparent Overlay:</strong> QR pattern is overlaid transparently on top of your image</li>
+            <li><strong>Configurable Transparency:</strong> Adjust QR pattern opacity from 30% to 90%</li>
+            <li><strong>Image Fit Options:</strong> Choose how image fits (Cover, Contain, or Stretch)</li>
+            <li><strong>Drag & Drop Support:</strong> Easy upload via drag-and-drop or click to select</li>
+            <li><strong>Live Preview:</strong> See background image preview before generating QR</li>
+            <li><strong>Remove Option:</strong> Easy removal to return to solid colors</li>
+        </ul>
+
+        <div class="test-steps">
+            <h4>🧪 How to Test the Background Image Feature:</h4>
+            <ol>
+                <li><strong>Open QR Generator:</strong> Click the link below to open the main QR generator</li>
+                <li><strong>Enter Content:</strong> Add any text, URL, or other content for your QR code</li>
+                <li><strong>Upload Background:</strong> Scroll to "Design & Logo" section and find "QR Background Image"</li>
+                <li><strong>Select Image:</strong> Click the upload area or drag an image file onto it</li>
+                <li><strong>Adjust Settings:</strong> Use the transparency and fit options to customize the appearance</li>
+                <li><strong>Generate QR:</strong> Click "Generate QR Code" to see your custom background QR</li>
+                <li><strong>Test Full-Screen:</strong> Click "Full Screen" to view the QR code in full-screen modal</li>
+                <li><strong>Download/Share:</strong> Use Download, Copy, or Print buttons to save your QR code</li>
+            </ol>
+        </div>
+
+        <h3>🔧 Technical Implementation Details:</h3>
+        <ul class="feature-list">
+            <li><strong>Image Processing:</strong> Background fills entire QR canvas area based on fit setting</li>
+            <li><strong>Pixel-Level Overlay:</strong> QR pattern applied with configurable transparency</li>
+            <li><strong>Multiple Fit Modes:</strong> Cover (crop to fill), Contain (fit within), Stretch (fill exactly)</li>
+            <li><strong>Smart White Detection:</strong> White QR background pixels become fully transparent</li>
+            <li><strong>Opacity Control:</strong> Dark QR pixels get user-defined transparency level</li>
+            <li><strong>Canvas Compositing:</strong> Professional image layering for clean results</li>
+            <li><strong>File Validation:</strong> Type and size checking for uploaded images</li>
+            <li><strong>Memory Management:</strong> Efficient canvas operations with cleanup</li>
+        </ul>
+
+        <h3>🎯 Integration with Existing Features:</h3>
+        <ul class="feature-list">
+            <li><strong>Logo Compatibility:</strong> Background images work with center logos</li>
+            <li><strong>Color Presets:</strong> Background overrides solid colors when uploaded</li>
+            <li><strong>Full-Screen Mode:</strong> Background images display perfectly in full-screen view</li>
+            <li><strong>Export Formats:</strong> Background QR codes work with all download formats</li>
+            <li><strong>Responsive Design:</strong> Background images adapt to different QR sizes</li>
+            <li><strong>Theme Support:</strong> Works seamlessly with light/dark themes</li>
+        </ul>
+
+        <h3>📱 Use Cases for Background Images:</h3>
+        <ul class="feature-list">
+            <li><strong>Branding:</strong> Add company logos or brand colors as QR backgrounds</li>
+            <li><strong>Events:</strong> Use event photos or themed images for QR codes</li>
+            <li><strong>Personal:</strong> Create unique QR codes with personal photos</li>
+            <li><strong>Marketing:</strong> Blend QR codes with product images or advertising</li>
+            <li><strong>Art Projects:</strong> Create artistic QR codes with custom imagery</li>
+            <li><strong>Social Media:</strong> Make QR codes more visually appealing for sharing</li>
+        </ul>
+
+        <div class="cta">
+            <a href="./index.html" target="_blank">🎨 Test Background Image Feature</a>
+        </div>
+
+        <h3>🎉 Project Status: Background Image Feature Complete!</h3>
+        <p>The background image feature has been successfully implemented and integrated with all existing QR generator functionality. Users can now create unique, branded QR codes with custom background images while maintaining perfect scannability.</p>
+    </div>
+</body>
+</html>

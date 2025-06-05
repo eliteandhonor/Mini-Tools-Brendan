@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal QR Test</title>
+</head>
+<body>
+    <h1>Minimal QR Code Test</h1>
+    <div id="qrcode-test" style="margin: 20px;"></div>
+    <canvas id="manual-canvas" width="256" height="256" style="border: 2px solid red; margin: 20px;"></canvas>
+    <button onclick="testDirect()">Test Direct QR</button>
+    <button onclick="testManual()">Test Manual Canvas</button>
+    <div id="output"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        function testDirect() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing direct QR generation...</p>';
+            
+            try {
+                const div = document.getElementById('qrcode-test');
+                div.innerHTML = ''; // Clear
+                
+                const qr = new QRCode(div, {
+                    text: "TEST QR CODE",
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                output.innerHTML += '<p>QR instance created. Checking for elements...</p>';
+                
+                setTimeout(() => {
+                    const canvas = div.querySelector('canvas');
+                    const img = div.querySelector('img');
+                    output.innerHTML += `<p>Canvas found: ${!!canvas}, Image found: ${!!img}</p>`;
+                    
+                    if (canvas) {
+                        output.innerHTML += `<p>Canvas size: ${canvas.width}x${canvas.height}</p>`;
+                    }
+                    if (img) {
+                        output.innerHTML += `<p>Image complete: ${img.complete}, src length: ${img.src.length}</p>`;
+                    }
+                }, 500);
+                
+            } catch (error) {
+                output.innerHTML += `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        function testManual() {
+            const canvas = document.getElementById('manual-canvas');
+            const ctx = canvas.getContext('2d');
+            const output = document.getElementById('output');
+            
+            output.innerHTML = '<p>Testing manual canvas...</p>';
+            
+            try {
+                // Clear canvas
+                ctx.clearRect(0, 0, 256, 256);
+                
+                // Create temporary div for QR generation
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const qr = new QRCode(tempDiv, {
+                    text: "MANUAL TEST QR",
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                setTimeout(() => {
+                    const generatedCanvas = tempDiv.querySelector('canvas');
+                    const generatedImg = tempDiv.querySelector('img');
+                    
+                    output.innerHTML += `<p>Generated canvas: ${!!generatedCanvas}, Generated img: ${!!generatedImg}</p>`;
+                    
+                    if (generatedCanvas) {
+                        ctx.drawImage(generatedCanvas, 0, 0, 256, 256);
+                        output.innerHTML += '<p>✅ Canvas copied successfully!</p>';
+                    } else if (generatedImg && generatedImg.complete) {
+                        ctx.drawImage(generatedImg, 0, 0, 256, 256);
+                        output.innerHTML += '<p>✅ Image copied successfully!</p>';
+                    } else {
+                        output.innerHTML += '<p>❌ No usable QR element found</p>';
+                    }
+                    
+                    document.body.removeChild(tempDiv);
+                }, 500);
+                
+            } catch (error) {
+                output.innerHTML += `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
