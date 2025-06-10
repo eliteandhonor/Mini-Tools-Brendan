@@ -271,8 +271,8 @@ class QRGeneratorApp {
                 dark: document.getElementById('foreground-color')?.value || '#000000',
                 light: document.getElementById('background-color')?.value || '#ffffff'
             },
-            logoImage: this.logoImage,
-            backgroundImage: this.backgroundImage
+            logoImage: this.imageManager.logoImage,
+            backgroundImage: this.imageManager.backgroundImage
         };
     }
 
@@ -291,6 +291,16 @@ class QRGeneratorApp {
         setTimeout(() => {
             this.generateQR();
         }, 100);
+    }
+
+    /**
+     * Regenerate QR code if one already exists
+     */
+    regenerateIfExists() {
+        const qrResult = document.getElementById('qr-result');
+        if (qrResult && qrResult.style.display !== 'none') {
+            this.regenerateQRDelayed();
+        }
     }
 
     /**

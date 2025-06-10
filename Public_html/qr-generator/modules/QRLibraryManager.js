@@ -22,9 +22,7 @@ export class QRLibraryManager {
         console.log('SimpleQRCode available:', this.hasFallbackLibrary);
         
         return this.hasMainLibrary || this.hasFallbackLibrary;
-    }
-
-    /**
+    }    /**
      * Generate QR code using available libraries with enhanced error handling
      */
     async generateQRCode(canvas, text, options) {
@@ -47,6 +45,9 @@ export class QRLibraryManager {
             try {
                 await this.generateWithMainLibrary(canvas, text, options, ctx);
                 console.log('✅ QR generated with main library');
+                
+                // Apply background and logo images after basic QR generation
+                await this.applyImageEnhancements(canvas, options);
                 return;
             } catch (error) {
                 console.error('❌ Main library failed:', error.message);
@@ -58,6 +59,9 @@ export class QRLibraryManager {
             try {
                 await this.generateWithFallback(canvas, text, options);
                 console.log('✅ QR generated with fallback library');
+                
+                // Apply background and logo images after basic QR generation
+                await this.applyImageEnhancements(canvas, options);
                 return;
             } catch (error) {
                 console.error('❌ Fallback library failed:', error.message);
@@ -150,6 +154,157 @@ export class QRLibraryManager {
             console.error('❌ Fallback generation failed:', error);
             throw error;
         }
+    }
+
+    /**
+     * Apply background and logo images to the generated QR code
+     */
+    async applyImageEnhancements(canvas, options) {
+        console.log('🎨 Applying image enhancements...');
+        
+        // Apply background image first (behind the QR code)
+        if (options.backgroundImage) {
+            console.log('📷 Adding background image');
+            await this.addBackgroundImage(canvas, options.backgroundImage, options);
+        }
+        
+        // Apply logo image on top
+        if (options.logoImage) {
+            console.log('🏷️ Adding logo image');
+            await this.addLogoImage(canvas, options.logoImage, options);
+        }
+        
+        console.log('✅ Image enhancements applied');
+    }
+
+    /**
+     * Add background image to QR code
+     */
+    async addBackgroundImage(canvas, backgroundImage, options) {
+        const ctx = canvas.getContext('2d');
+        const opacity = parseFloat(document.getElementById('background-opacity')?.value || '0.3');
+        const fit = document.getElementById('background-fit')?.value || 'cover';
+        
+        const { width, height, x, y } = this.calculateBackgroundDimensions(
+            backgroundImage.width, 
+            backgroundImage.height, 
+            canvas.width, 
+            fit
+        );
+
+        // Draw background with opacity behind the QR code
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over'; // Draw behind existing content
+        ctx.globalAlpha = opacity;
+        ctx.drawImage(backgroundImage, x, y, width, height);
+        ctx.restore();
+    }
+
+    /**
+     * Add logo image to QR code
+     */
+    async addLogoImage(canvas, logoImage, options) {
+        const ctx = canvas.getContext('2d');
+        const size = parseInt(document.getElementById('logo-size')?.value || '20');
+        const background = document.getElementById('logo-background')?.value || 'none';
+        
+        const logoSize = (canvas.width * size) / 100;
+        const logoX = (canvas.width - logoSize) / 2;
+        const logoY = (canvas.height - logoSize) / 2;
+
+        // Draw logo background if specified
+        if (background !== 'none') {
+            this.drawLogoBackground(ctx, logoX, logoY, logoSize, background);
+        }
+
+        // Draw logo on top
+        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+    }
+
+    /**
+     * Calculate background image dimensions based on fit setting
+     */
+    calculateBackgroundDimensions(imgWidth, imgHeight, canvasSize, fit) {
+        let width, height, x = 0, y = 0;
+
+        switch (fit) {
+            case 'cover':
+                const scale = Math.max(canvasSize / imgWidth, canvasSize / imgHeight);
+                width = imgWidth * scale;
+                height = imgHeight * scale;
+                x = (canvasSize - width) / 2;
+                y = (canvasSize - height) / 2;
+                break;
+                
+            case 'contain':
+                const scaleContain = Math.min(canvasSize / imgWidth, canvasSize / imgHeight);
+                width = imgWidth * scaleContain;
+                height = imgHeight * scaleContain;
+                x = (canvasSize - width) / 2;
+                y = (canvasSize - height) / 2;
+                break;
+                
+            case 'stretch':
+                width = canvasSize;
+                height = canvasSize;
+                break;
+                
+            default:
+                width = canvasSize;
+                height = canvasSize;
+        }
+
+        return { width, height, x, y };
+    }
+
+    /**
+     * Draw logo background
+     */
+    drawLogoBackground(ctx, x, y, size, background) {
+        const padding = size * 0.1;
+        const bgSize = size + padding * 2;
+        const bgX = x - padding;
+        const bgY = y - padding;
+
+        ctx.save();
+        
+        switch (background) {
+            case 'white':
+                ctx.fillStyle = '#ffffff';
+                break;
+            case 'black':
+                ctx.fillStyle = '#000000';
+                break;
+            case 'rounded':
+                ctx.fillStyle = '#ffffff';
+                this.roundRect(ctx, bgX, bgY, bgSize, bgSize, size * 0.1);
+                ctx.fill();
+                ctx.restore();
+                return;
+            default:
+                ctx.restore();
+                return;
+        }
+
+        ctx.fillRect(bgX, bgY, bgSize, bgSize);
+        ctx.restore();
+    }
+
+    /**
+     * Draw rounded rectangle
+     */
+    roundRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
     }
 
     /**
